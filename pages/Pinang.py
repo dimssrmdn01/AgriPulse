@@ -2,53 +2,15 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import database
+import style
 
 st.set_page_config(page_title="Pinang | Trend Indicator", page_icon="🌰", layout="wide")
-
-# ============================================================
-# DESIGN TOKENS (Senada dengan Home & Karet)
-# ============================================================
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
-
-:root{
-  --bg: #211814;
-  --surface: #2C221C;
-  --border-soft: rgba(242,233,222,0.10);
-  --text: #F2E9DE;
-  --text-dim: #B8A793;
-  --pinang: #C1622D;
-  
-  --good: #7BA05B;
-  --bad: #B0554A;
-  --neutral: #C1943D;
-  
-  --font-display: 'Fraunces', serif;
-  --font-sans: 'IBM Plex Sans', sans-serif;
-}
-
-.stApp { background: var(--bg); color: var(--text); font-family: var(--font-sans); }
-.ap-header { font-family: var(--font-display); font-size: 36px; color: var(--text); font-weight: 600; margin-bottom: 8px; }
-.ap-sub { font-size: 16px; color: var(--text-dim); line-height: 1.6; margin-bottom: 32px; }
-.ap-highlight { color: var(--pinang); font-style: italic; }
-
-.metric-card {
-    background: var(--surface);
-    border: 1px solid var(--border-soft);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-}
-.metric-value { font-size: 28px; font-weight: 600; font-family: var(--font-display); color: var(--text); }
-.metric-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;}
-</style>
-""", unsafe_allow_html=True)
+style.apply_design_tokens()
 
 # ============================================================
 # HEADER
 # ============================================================
-st.markdown('<div class="ap-header">🌰 Tren Ekspor <span class="ap-highlight">Pinang</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="ap-header">🌰 Tren Ekspor <span class="ap-highlight" style="color: var(--pinang);">Pinang</span></div>', unsafe_allow_html=True)
 st.markdown('<div class="ap-sub">Tier 2: Indikator arah pergerakan pasar berdasarkan dinamika volume ekspor tahunan dan sentimen perdagangan global.</div>', unsafe_allow_html=True)
 
 # ============================================================
@@ -96,15 +58,14 @@ with col2:
 with col3:
     st.markdown('<div class="metric-card"><div class="metric-label">Est. Harga FOB (BPS)</div><div class="metric-value">Rp 12.800 / Kg</div></div>', unsafe_allow_html=True)
 
-st.markdown("---")
+st.markdown('<hr class="ap-divider">', unsafe_allow_html=True)
 
 # ============================================================
 # GRAFIK HISTORI TAHUNAN (SIMULASI DATA BPS/FOB)
 # ============================================================
-st.subheader("📊 Histori Harga Ekspor (FOB) 5 Tahun Terakhir")
+st.markdown('<div class="ap-section-title">📊 Histori Harga Ekspor (FOB) 5 Tahun Terakhir</div>', unsafe_allow_html=True)
 st.write("Data harga pinang memiliki volatilitas tinggi antar musim panen. Grafik di bawah merepresentasikan rata-rata harga Free On Board (FOB) tahunan.")
 
-# Data historis simulasi berdasarkan tren pinang yang sempat anjlok lalu naik perlahan
 data_tahun = ["2022", "2023", "2024", "2025", "2026 (YTD)"]
 data_harga = [14200, 8500, 9200, 11500, 12800]
 
@@ -122,12 +83,12 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-st.markdown("---")
+st.markdown('<hr class="ap-divider">', unsafe_allow_html=True)
 
 # ============================================================
 # TABEL ANALISIS SENTIMEN BERITA TERBARU
 # ============================================================
-st.subheader("📰 Radar Sentimen Ekspor")
+st.markdown('<div class="ap-section-title">📰 Radar Sentimen Ekspor</div>', unsafe_allow_html=True)
 if not df_news.empty:
     df_display = df_news.copy()
     

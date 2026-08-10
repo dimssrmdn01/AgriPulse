@@ -6,59 +6,21 @@ from datetime import datetime, timedelta
 from sklearn.linear_model import Lasso
 from sklearn.metrics import mean_squared_error
 import database
+import style
 
 st.set_page_config(page_title="Karet | Predictive Analysis", page_icon="🌾", layout="wide")
-
-# ============================================================
-# DESIGN TOKENS 
-# ============================================================
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
-
-:root{
-  --bg: #211814;
-  --surface: #2C221C;
-  --border-soft: rgba(242,233,222,0.10);
-  --text: #F2E9DE;
-  --text-dim: #B8A793;
-  --karet: #E7DCC4;
-  
-  --good: #7BA05B;
-  --bad: #B0554A;
-  --neutral: #C1943D;
-  
-  --font-display: 'Fraunces', serif;
-  --font-sans: 'IBM Plex Sans', sans-serif;
-}
-
-.stApp { background: var(--bg); color: var(--text); font-family: var(--font-sans); }
-.ap-header { font-family: var(--font-display); font-size: 36px; color: var(--text); font-weight: 600; margin-bottom: 8px; }
-.ap-sub { font-size: 16px; color: var(--text-dim); line-height: 1.6; margin-bottom: 32px; }
-.ap-highlight { color: var(--karet); font-style: italic; }
-
-.metric-card {
-    background: var(--surface);
-    border: 1px solid var(--border-soft);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-}
-.metric-value { font-size: 28px; font-weight: 600; font-family: var(--font-display); color: var(--text); }
-.metric-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;}
-</style>
-""", unsafe_allow_html=True)
+style.apply_design_tokens()
 
 # ============================================================
 # HEADER
 # ============================================================
-st.markdown('<div class="ap-header">🌾 Prediksi Harga <span class="ap-highlight">Karet</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="ap-header">🌾 Prediksi Harga <span class="ap-highlight" style="color: var(--karet);">Karet</span></div>', unsafe_allow_html=True)
 st.markdown('<div class="ap-sub">Tier 1: Analisis harga menggunakan Machine Learning (Lasso) pada data futures historis yang divalidasi dengan sentimen berita.</div>', unsafe_allow_html=True)
 
 # ============================================================
 # AMBIL DATA SENTIMEN
 # ============================================================
-@st.cache_data(ttl=3600) # Cache 1 jam agar tidak over-request ke Supabase
+@st.cache_data(ttl=3600)
 def get_karet_sentiment():
     try:
         response = database.supabase.table("news_articles") \
@@ -68,7 +30,7 @@ def get_karet_sentiment():
             .limit(10) \
             .execute()
         return pd.DataFrame(response.data) if response.data else pd.DataFrame()
-    except Exception as e:
+    except Exception:
         return pd.DataFrame()
 
 df_news = get_karet_sentiment()
@@ -87,26 +49,20 @@ else:
 # ============================================================
 # MACHINE LEARNING: LASSO REGRESSION & DATA FUTURES
 # ============================================================
-# Simulasi penarikan data futures historis yang valid (30 Hari ke belakang)
-# Dalam skenario real, ini ditarik dari database.supabase.table("futures_prices")
 dates_hist = [datetime.today() - timedelta(days=x) for x in range(30, -1, -1)]
 X_hist = np.arange(len(dates_hist)).reshape(-1, 1)
 
-# Menciptakan tren data historis (Misal: Tren naik dengan sedikit fluktuasi)
 np.random.seed(42)
 y_hist = 14000 + (X_hist.ravel() * 12) + np.sin(X_hist.ravel() * 0.5) * 150 + np.random.normal(0, 50, len(X_hist))
 
 df_hist = pd.DataFrame({"Tanggal": dates_hist, "Hari_ke": X_hist.ravel(), "Harga": y_hist, "Tipe": "Historis (Asli)"})
 
-# Inisiasi & Training Model Lasso
 lasso_model = Lasso(alpha=1.0, max_iter=10000)
 lasso_model.fit(df_hist[['Hari_ke']], df_hist['Harga'])
 
-# Evaluasi Model (Menghitung MSE)
 y_pred_train = lasso_model.predict(df_hist[['Hari_ke']])
 mse_score = mean_squared_error(df_hist['Harga'], y_pred_train)
 
-# Prediksi 7 Hari ke Depan
 future_days = 7
 dates_future = [datetime.today() + timedelta(days=x) for x in range(1, future_days + 1)]
 X_future = np.arange(len(dates_hist), len(dates_hist) + future_days).reshape(-1, 1)
@@ -114,7 +70,6 @@ y_future = lasso_model.predict(X_future)
 
 df_future = pd.DataFrame({"Tanggal": dates_future, "Hari_ke": X_future.ravel(), "Harga": y_future, "Tipe": "Prediksi (Lasso)"})
 
-# Gabungkan data untuk visualisasi
 last_hist_point = df_hist.iloc[[-1]].copy()
 last_hist_point['Tipe'] = "Prediksi (Lasso)"
 df_future = pd.concat([last_hist_point, df_future], ignore_index=True)
@@ -133,14 +88,13 @@ with col2:
 with col3:
     st.markdown(f'<div class="metric-card"><div class="metric-label">Proyeksi Harga Besok</div><div class="metric-value">Rp {prediksi_besok:,.0f}</div></div>', unsafe_allow_html=True)
 
-st.markdown("---")
+st.markdown('<hr class="ap-divider">', unsafe_allow_html=True)
 
 # ============================================================
 # GRAFIK PREDIKSI HARGA
 # ============================================================
-st.subheader("📈 Prediksi Harga Futures (Lasso Model)")
+st.markdown('<div class="ap-section-title">📈 Prediksi Harga Futures (Lasso Model)</div>', unsafe_allow_html=True)
 
-# Render plot interaktif
 fig = px.line(df_combined, x="Tanggal", y="Harga", color="Tipe", line_dash="Tipe",
               color_discrete_map={"Historis (Asli)": "#E7DCC4", "Prediksi (Lasso)": "#7BA05B"})
 
@@ -156,12 +110,12 @@ fig.update_layout(
 fig.update_traces(line_width=3)
 st.plotly_chart(fig, use_container_width=True)
 
-st.markdown("---")
+st.markdown('<hr class="ap-divider">', unsafe_allow_html=True)
 
 # ============================================================
 # TABEL ANALISIS SENTIMEN BERITA TERBARU
 # ============================================================
-st.subheader("📰 Radar Sentimen Berita")
+st.markdown('<div class="ap-section-title">📰 Radar Sentimen Berita</div>', unsafe_allow_html=True)
 if not df_news.empty:
     df_display = df_news.rename(columns={
         'title': 'Judul Berita',
