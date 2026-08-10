@@ -99,11 +99,11 @@ def apply_design_tokens(is_home=False):
 
     if is_home:
         css += """
-        <style>
-        .stApp { background: radial-gradient(ellipse 70% 40% at 15% 0%, rgba(193,98,45,0.10), transparent 60%), radial-gradient(ellipse 60% 40% at 85% 10%, rgba(163,74,58,0.08), transparent 60%), var(--bg); }
-        .ap-eyebrow { color: var(--pinang); }
-        </style>
-        """
+<style>
+.stApp { background: radial-gradient(ellipse 70% 40% at 15% 0%, rgba(193,98,45,0.10), transparent 60%), radial-gradient(ellipse 60% 40% at 85% 10%, rgba(163,74,58,0.08), transparent 60%), var(--bg); }
+.ap-eyebrow { color: var(--pinang); }
+</style>
+"""
     else:
         css += "<style>.stApp { background: var(--bg); }</style>"
 
