@@ -175,7 +175,7 @@ if not df_news.empty:
         return f'color: {color}; font-weight: bold;'
     
     st.dataframe(
-        df_display[['Judul Berita', 'Sumber', 'Label', 'Skor AI']].style.applymap(color_score, subset=['Skor AI']),
+        df_display[['Judul Berita', 'Sumber', 'Label', 'Skor AI']].style.map(color_score, subset=['Skor AI']),
         use_container_width=True,
         hide_index=True
     )
