@@ -8,3 +8,4 @@ langchain-groq
 beautifulsoup4
 requests
 python-dotenv
+scikit-learn
