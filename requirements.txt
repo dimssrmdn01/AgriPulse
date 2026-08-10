@@ -3,6 +3,8 @@ pandas
 plotly
 supabase
 groq
+langchain
+langchain-groq
 beautifulsoup4
 requests
 python-dotenv
