@@ -12,7 +12,7 @@ style.apply_design_tokens()
 st.markdown('<div class="ap-eyebrow">Tier 3 · Data Komunitas</div>', unsafe_allow_html=True)
 st.markdown('<div class="ap-header">Log Harga <em style="color: var(--gambir);">Gambir</em></div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="ap-sub">Belum ada data harga gambir yang terstruktur secara nasional — jadi kita bangun sendiri. '
+    '<div class="ap-sub">Belum ada data harga gambir yang terstruktur secara nasional jadi kita bangun sendiri. '
     'Masukkan harga jual/beli yang kamu lihat hari ini di lapangan, dan bantu bangun transparansi harga '
     'bareng-bareng untuk petani dan pengepul lain.</div>',
     unsafe_allow_html=True

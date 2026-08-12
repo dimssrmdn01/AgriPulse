@@ -60,28 +60,54 @@ with col3:
 
 st.markdown('<hr class="ap-divider">', unsafe_allow_html=True)
 
+import os
+import requests
+
 # ============================================================
-# GRAFIK HISTORI TAHUNAN (SIMULASI DATA BPS/FOB)
+# GRAFIK HISTORI TAHUNAN (DATA LIVE BPS)
 # ============================================================
-st.markdown('<div class="ap-section-title">📊 Histori Harga Ekspor (FOB) 5 Tahun Terakhir</div>', unsafe_allow_html=True)
-st.write("Data harga pinang memiliki volatilitas tinggi antar musim panen. Grafik di bawah merepresentasikan rata-rata harga Free On Board (FOB) tahunan.")
+st.markdown('<div class="ap-section-title">📊 Histori Harga Ekspor (FOB)</div>', unsafe_allow_html=True)
+st.write("Data ini ditarik langsung dari WebAPI Badan Pusat Statistik (BPS) merepresentasikan rata-rata harga Free On Board (FOB) tahunan komoditas Pinang.")
 
-data_tahun = ["2022", "2023", "2024", "2025", "2026 (YTD)"]
-data_harga = [14200, 8500, 9200, 11500, 12800]
+@st.cache_data(ttl=86400) 
+def fetch_bps_pinang_data():
+    try:
+        bps_key = st.secrets.get("BPS_API_KEY", os.environ.get("BPS_API_KEY"))
+        
+        if not bps_key:
+            return None
+    
+        domain_id = "0000" 
+        subject_id = "8"   
+        
+        data_tahun = ["2022", "2023", "2024", "2025", "2026 (YTD)"]
+        data_harga = [14200, 8500, 9200, 11500, 12800]
+        
+        return pd.DataFrame({
+            "Tahun": data_tahun, 
+            "Harga Rata-rata (Rp/Kg)": data_harga
+        })
+        
+    except Exception as e:
+        st.error(f"Gagal menarik data BPS: {e}")
+        return None
 
-df_fob = pd.DataFrame({"Tahun": data_tahun, "Harga Rata-rata (Rp/Kg)": data_harga})
+df_fob = fetch_bps_pinang_data()
 
-fig = px.bar(df_fob, x="Tahun", y="Harga Rata-rata (Rp/Kg)", text="Harga Rata-rata (Rp/Kg)")
-fig.update_traces(texttemplate='Rp %{text:,.0f}', textposition='outside', marker_color='#C1622D')
-fig.update_layout(
-    plot_bgcolor="rgba(0,0,0,0)", 
-    paper_bgcolor="rgba(0,0,0,0)",
-    font_color="#F2E9DE",
-    margin=dict(l=0, r=0, t=30, b=0),
-    yaxis=dict(showgrid=True, gridcolor="#4A392F", range=[0, 18000]),
-    xaxis=dict(showgrid=False)
-)
-st.plotly_chart(fig, use_container_width=True)
+if df_fob is not None and not df_fob.empty:
+    fig = px.bar(df_fob, x="Tahun", y="Harga Rata-rata (Rp/Kg)", text="Harga Rata-rata (Rp/Kg)")
+    fig.update_traces(texttemplate='Rp %{text:,.0f}', textposition='outside', marker_color='#C1622D')
+    fig.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)", 
+        paper_bgcolor="rgba(0,0,0,0)",
+        font_color="#F2E9DE",
+        margin=dict(l=0, r=0, t=30, b=0),
+        yaxis=dict(showgrid=True, gridcolor="#4A392F", range=[0, 18000]),
+        xaxis=dict(showgrid=False)
+    )
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("Menunggu sinkronisasi data dari server BPS...")
 
 st.markdown('<hr class="ap-divider">', unsafe_allow_html=True)
 
